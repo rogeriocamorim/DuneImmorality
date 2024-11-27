@@ -39,6 +39,8 @@ local choice = CardEffect.choice
 local optional = CardEffect.optional
 local seat = CardEffect.seat
 local fremenBond = CardEffect.fremenBond
+-- dotdotdot TODO reveal command
+-- local revealCommand = CardEffect.revealCommand
 local agentInEmperorSpace = CardEffect.agentInEmperorSpace
 local emperorAlliance = CardEffect.emperorAlliance
 local spacingGuildAlliance = CardEffect.spacingGuildAlliance
@@ -274,6 +276,42 @@ local ImperiumCard = {
     muadDibUsul = {factions = {'fremen'}, agentIcons = {'blue'}, reveal = {persuasion(2)}},
     muadDibThreatenSpiceProduction = {agentIcons = {'yellow'}, reveal = {persuasion(1)}},
     muadDibSignetRing = {agentIcons = {'green', 'blue', 'yellow'}, reveal = {persuasion(1)}},
+    -- dotdotdot bloodlines imperium
+    -- dotdotdot TODO reveal command
+    bl_Bombast = {factions = {'emperor'}, cost = 1, agentIcons = {'green'}, reveal = {persuasion(1), 'solari(revealCommand(3))', 'trash this card'}},
+    bl_Sandwalk = {factions = {'fremen'}, cost = 1, agentIcons = {'yellow'}, reveal = {persuasion(1), sword(1), persuasion(fremenBond(1))}},
+    bl_DisruptionTactics = {factions = {'fremen'}, cost = 2, agentIcons = {'fremen', 'yellow'}, reveal = {persuasion(1), 'trash this card --> combat icon'}},
+    bl_UrgentShigawire = {factions = {'beneGesserit'}, cost = 2, agentIcons = {'beneGesserit', 'blue'}, reveal = {persuasion(1)}},
+    bl_EliminateAllies = {factions = {'emperor'}, cost = 2, spy = true, reveal = {persuasion(1), sword(1)}},
+    bl_DeliverLogistics = {factions = {'spacingGuild'}, cost = 2, reveal = {choice(1, {persuasion(1), 'contract(1)'})}},
+    bl_CommandCenter = {factions = {'emperor'}, cost = 3, agentIcons = {'emperor', 'blue'}, reveal = {persuasion(1), 'retreat 2 troops --> persuasion(2)'}},
+    bl_EngineeredMiracle = {factions = {'beneGesserit'}, cost = 3, agentIcons = {'fremen', 'yellow'}, reveal = {persuasion(1), 'command: trash this card --> acquire card on imperium row'}},
+    -- dotdotdot TODO reveal command
+    bl_IBelieve = {factions = {'fremen'}, cost = 3, agentIcons = {'fremen', 'blue'}, reveal = {persuasion(1), 'troop(revealCommand(2))'}},
+    bl_LitanyAgainstFear = {factions = {'beneGesserit'}, cost = 3, reveal = {persuasion(2)}},
+    bl_EliteForces = {factions = {'emperor', 'spacingGuild'}, cost = 3, agentIcons = {'spacingGuild', 'emperor'}, reveal = {persuasion(1), sword(1)}},
+    bl_ArrakisObserver = {factions = {'spacingGuild'}, cost = 3, agentIcons = {'blue', 'yellow'}, reveal = {persuasion(1), 'lift spy --> sword(3)'}},
+    -- dotdotdot TODO reveal command
+    bl_IntelligenceTraining = {factions = {'emperor'}, cost = 3, acquireBonus = {spy(1)}, agentIcons = {'green', 'blue'}, reveal = {persuasion(1), sword(1), 'spy(revealCommand(1))'}},
+    bl_RuthlessLeadership = {factions = {'emperor'}, cost = 4, agentIcons = {'blue', 'yellow'}, reveal = {persuasion(1), sword(1), 'command: combat icon'}},
+    bl_FremenWarName = {factions = {'fremen'}, cost = 4, agentIcons = {'fremen', 'yellow'}, reveal = {persuasion(2), sword(fremenBond(2))}},
+    bl_SardaukarStandard = {factions = {'emperor'}, cost = 4, agentIcons = {'emperor', 'blue'}, reveal = {persuasion(2), troop(1)}},
+    -- dotdotdot TODO reveal command
+    bl_ShroudedCounsel = {factions = {'beneGesserit'}, cost = 4, spy = true, reveal = {persuasion(1), 'trash(revealCommand(1))'}},
+    bl_CorruptBureaucrat = {factions = {'spacingGuild'}, cost = 4, spy = true, agentIcons = {'spacingGuild', 'green'}, reveal = {persuasion(2)}},
+    bl_IxianAmbassador = {cost = 4, spy = true, agentIcons = {'green'}, reveal = {persuasion(1), '2+ tech tiles --> influence(1)'}},
+    -- dotdotdot TODO reveal sardaukar commander bonus
+    bl_QuashRebellion = {factions = {'emperor'}, cost = 5, agentIcons = {'emperor', 'spacingGuild', 'green'}, reveal = {sword(2), '1+ sardaukar commander in conflict --> persuasion(2)'}},
+    -- dotdotdot TODO reveal command
+    bl_SouthernFaith = {factions = {'fremen'}, cost = 5, agentIcons = {'fremen', 'blue'}, reveal = {persuasion(1), sword(2), 'spice(revealCommand(2))'}},
+    bl_HolyWar = {factions = {'fremen'}, cost = 5, agentIcons = {'emperor', 'spacingGuild', 'beneGesserit', 'green'}, reveal = {persuasion(1), troop(1), 'fremen bond: combat icon'}},
+    bl_MercantileAffairs = {factions = {'beneGesserit'}, cost = 5, acquireBonus = {contract(1)}, spy = true, agentIcons = {'beneGesserit', 'blue', 'yellow'}, reveal = {persuasion(2)}},
+    -- dotdotdot TODO reveal command
+    bl_PointingTheWay = {factions = {'fremen'}, cost = 6, agentIcons = {'fremen', 'blue', 'yellow'}, reveal = {persuasion(1), sword(2), 'influence(revealCommand(1))'}},
+    bl_ChoamDemands = {factions = {'spacingGuild'}, cost = 6, agentIcons = {'green', 'blue', 'yellow'}, reveal = {'contract(4), trash --> influence(1) for all factions'}},
+    -- dotdotdot TODO reveal 4+ troop in garrison bonus
+    bl_ImperialThroneship = {factions = {'emperor'}, cost = 7, acquireBonus = {influence(1, 'emperor')}, agentIcons = {'emperor', 'spacingGuild', 'beneGesserit', 'green', 'blue', 'yellow'}, reveal = {persuasion(2), 'troop(4)+ in garrison --> persuasion(1), solari(3)'}},
+    bl_PossibleFutures = {factions = {'fremen'}, cost = 8, acquireBonus = {water(1)}, agentIcons = {'green', 'blue', 'yellow'}, reveal = {persuasion(2), water(1)}},
 }
 
 function ImperiumCard._resolveCard(card)

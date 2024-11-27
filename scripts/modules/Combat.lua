@@ -110,6 +110,10 @@ function Combat._transientSetUp(settings)
                         Park.putObject(object, Combat.dreadnoughtParks[color])
                     elseif Types.isSandworm(object, color) then
                         object.destruct()
+                    -- dotdotdot TODO duncan agent recall
+                    -- elseif Types.isAgent(object, color) then
+                    --     Park.putObject(object, PlayBoard.getAgentPark(color))
+                    -- dotdotdot note - add sardaukar commanders
                     end
                 end
             end
@@ -552,6 +556,20 @@ function Combat.calculateCombatForce(color)
                 force = force + (Combat.dreadnoughtStrengths[color] or 3)
             elseif Types.isSandworm(object, color) then
                 force = force + 3
+            -- dotdotdot duncan agent
+            elseif Types.isAgent(object, color) then
+                if PlayBoard.getLeader(color).name == "bl_Duncan" then
+                    if PlayBoard.hasSwordmaster(color) then
+                        force = force + 3
+                    else
+                        force = force + 2
+                    end
+                else
+                    force = force
+                end
+            -- dotdotdot TODO sardaukar commander, maybe just use as troop?
+            -- elseif Types.isSardukarCommander(object, color) then
+            --     force = force + 2
             else
                 error("Unknown unit type: " .. object.getGUID())
             end

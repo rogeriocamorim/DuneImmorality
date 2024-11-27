@@ -382,8 +382,9 @@ function Action.getTroopPark(color, parkName)
         return Combat.getGarrisonPark(color)
     elseif parkName == "combat" then
         return Combat.getBattlegroundPark()
-    elseif parkName == "negotiation" then
-        return TechMarket.getNegotiationPark(color)
+    -- dotdotdot disable
+    -- elseif parkName == "negotiation" then
+    --     return TechMarket.getNegotiationPark(color)
     elseif parkName == "tanks" then
         return TleilaxuResearch.getTankPark(color)
     else

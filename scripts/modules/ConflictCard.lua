@@ -58,6 +58,9 @@ local ConflictCard = {
     skirmishA = {level = 1, uprising = true, objective = "crysknife", rewards = {{influence(1)}, {intrigue(1), spice(1)}, {spice(1)}}},
     skirmishB = {level = 1, uprising = true, objective = "ornithopter", rewards = {{intrigue(1), solari(1)}, {intrigue(1), solari(2)}, {intrigue(1)}}},
     skirmishC = {level = 1, uprising = true, objective = "muadDib", rewards = {{solari(2)}, {solari(3)}, {solari(2)}}},
+    -- dotdotdot bloodlines conflict rewards
+    bl_Skirmish = {level = 1, uprising = true, objective = "joker", rewards = {{trash(1)}, {water(1), solari(1)}, {solari(2)}}},
+    bl_StormsInTheSouth = {level = 2, uprising = true, objective = "joker", rewards = {{spy(1), spice(2)}, {intrigue(2), solari(2)}, {intrigue(1), solari(2)}}},
     --[[
     desertPower = {level = 2, legacy = true, rewards = {{vp(1), water(1)}, {water(1), spice(1)}, {spice(1)}}},
     raidStockpiles = {level = 2, legacy = true, rewards = {{intrigue(1), spice(3)}, {spice(2)}, {spice(1)}}},

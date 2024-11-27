@@ -83,6 +83,11 @@ function ScoreBoard.onLoad(state)
             tleilaxBag = "37ceab",
             forHumanityBag = "6e2a13"
         },
+        -- dotdotdot TODO uprising VP tokens
+        -- uprising = {
+        --     3v3 token for someproudly = "not created yet"
+        --     sardaukarHighCommand = "not created yet"
+        -- },
     })
 
     if state.settings and state.settings.riseOfIx then

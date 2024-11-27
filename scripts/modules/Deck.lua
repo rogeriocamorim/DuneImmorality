@@ -227,6 +227,34 @@ local Deck = {
             longLiveTheFighters = 1,
             overthrow = 1,
             steersman = 1,
+            -- dotdotdot bloodlines imperium
+            bl_Bombast = 1,
+            bl_Sandwalk = 2,
+            bl_DisruptionTactics = 1,
+            bl_UrgentShigawire = 2,
+            bl_EliminateAllies = 1,
+            bl_DeliverLogistics = 2,
+            bl_CommandCenter = 1,
+            bl_EngineeredMiracle = 1,
+            bl_IBelieve = 1,
+            bl_LitanyAgainstFear = 1,
+            bl_EliteForces = 1,
+            bl_ArrakisObserver = 1,
+            bl_IntelligenceTraining = 2,
+            bl_RuthlessLeadership = 1,
+            bl_FremenWarName = 1,
+            bl_SardaukarStandard = 1,
+            bl_ShroudedCounsel = 1,
+            bl_CorruptBureaucrat = 1,
+            bl_IxianAmbassador = 2,
+            bl_QuashRebellion = 2,
+            bl_SouthernFaith = 1,
+            bl_HolyWar = 1,
+            bl_MercantileAffairs = 1,
+            bl_PointingTheWay = 1,
+            bl_ChoamDemands = 1,
+            bl_ImperialThroneship = 1,
+            bl_PossibleFutures = 1,
         },
         uprisingContract = {
             cargoRunner = 1,
@@ -417,6 +445,37 @@ local Deck = {
             crysknife = 1,
             shadowAlliance = 1,
             secureSpiceTrade = 1,
+            -- dotdotdot bloodlines intrigues
+            bl_AdaptiveTactics = 1,
+            bl_DesertSupport = 1,
+            bl_EmperorsInvitation = 1,
+            bl_HonorGuard = 1,
+            bl_ReturnTheFavor = 1,
+            bl_SacredPools = 1,
+            bl_SeizeProduction = 1,
+            bl_TheStrongSurvive = 1,
+            bl_TenuousBond = 1,
+            bl_WithdrawalAgreement = 1,
+            bl_FalseOrders = 1,
+            bl_GraspArrakis = 1,
+            bl_InsiderInformation = 1,
+            bl_RipplesInTheSand = 1,
+            bl_SleeperUnit = 1,
+            bl_CoerciveNegotiation = 1,
+            bl_BattlefieldResearch = 1,
+            bl_RapidEngineering = 1,
+            -- bl_Piter_Withdrawn = 1,
+            -- bl_Piter_Unnatural = 1,
+            -- bl_Piter_Ambitious = 1,
+            -- bl_Piter_Resourceful = 1,
+            -- bl_Piter_Shrewd = 1,
+            -- bl_Piter_Sinister = 1,
+            -- bl_Piter_Sadistic = 1,
+            -- bl_Piter_Discerning = 1,
+            -- bl_Piter_Devious = 1,
+            -- bl_Piter_Controlled = 1,
+            -- bl_Piter_Calculating = 1,
+            -- bl_Piter_Insidious = 1,
         },
         uprisingContract = {
             leverage = 1,
@@ -448,6 +507,8 @@ local Deck = {
                 skirmishA = 1,
                 skirmishB = 1,
                 skirmishC = 1,
+                -- dotdotdot bloodlines conflict
+                bl_Skirmish = 1,
             },
         },
         level2 = {
@@ -461,6 +522,8 @@ local Deck = {
                 secureImperialBasin = 1,
                 protectTheSietches = 1,
                 tradeDispute = 1,
+                -- dotdotdot bloodlines conflict
+                bl_StormsInTheSouth = 1,
             },
         },
         level3 = {
@@ -560,6 +623,27 @@ local Deck = {
             holtzmanEngine = 1,
             invasionShips = 1,
         },
+        -- dotdotdot bloodlines techs
+        uprising = {
+            bl_TrainingDepot = 1,
+            bl_GeneLockedVault = 1,
+            bl_Glowglobes = 1,
+            bl_PlanetaryArray = 1,
+            bl_ServoReceivers = 1,
+            bl_DeliveryBay = 1,
+            bl_PlasteelBlades = 1,
+            bl_SuspensorSuits = 1,
+            bl_RapidDropships = 1,
+            bl_SelfDestroyingMessages = 1,
+            bl_NavigationChamber = 1,
+            bl_SardaukarHighCommand = 1,
+            bl_ForbiddenWeapons = 1,
+            bl_AdvancedDataAnalysis = 1,
+            bl_OrnithopterFleet = 1,
+            bl_Panopticon = 1,
+            bl_SpyDrones = 1,
+            bl_ChoamTransports = 1,
+        }
     },
     leaders = {
         legacy = {
@@ -590,6 +674,16 @@ local Deck = {
             feydRauthaHarkonnen = 1,
             shaddamCorrino = 1,
             muadDib = 1,
+            -- dotdotdot bloodlines leaders
+            bl_Chani = 1,
+            bl_Duncan = 1,
+            bl_Esmar = 1,
+            bl_Hasimir = 1,
+            bl_Kota = 1,
+            bl_Liet = 1,
+            bl_Mohiam = 1,
+            bl_Piter = 1,
+            bl_Yrkoon = 1,
         },
         merakon = {
             -- Legacy
@@ -863,7 +957,9 @@ function Deck.generateTechDeck(deckZones)
     assert(#deckZones == 3)
     local continuation = Helper.createContinuation("Deck.generateTechDeck")
 
-    local keys = Helper.getKeys(Deck.tech.ix)
+    -- dotdotdot disabled ix techs, used code for bloodlines techs
+    -- local keys = Helper.getKeys(Deck.tech.ix)
+    local keys = Helper.getKeys(Deck.tech.uprising)
     Helper.shuffle(keys)
 
     local decks = {}
@@ -873,7 +969,9 @@ function Deck.generateTechDeck(deckZones)
         remaining = remaining + 1
         local part = {}
         for j = (i - 1) * 6 + 1, i * 6 do
-            part[keys[j]] = Deck.tech.ix[keys[j]]
+            -- dotdotdot disabled ix techs, used code for bloodlines techs
+            -- part[keys[j]] = Deck.tech.ix[keys[j]]
+            part[keys[j]] = Deck.tech.uprising[keys[j]]
         end
         local zone = deckZones[i]
         Deck._generateDeck("Tech", zone, part, Deck.sources.tech).doAfter(function (deck)

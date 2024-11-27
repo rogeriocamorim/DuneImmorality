@@ -14,15 +14,22 @@ local TechCard = Module.lazyRequire("TechCard")
 local Action = Module.lazyRequire("Action")
 
 local TechMarket = {
-    negotiationParks = {},
+    -- dotdotdot disabled
+    -- negotiationParks = {},
     acquireTechOptions = {},
 }
 
 ---
 function TechMarket.onLoad(state)
     Helper.append(TechMarket, Helper.resolveGUIDs(false, {
-        board = "d75455",
-        negotiationZone = "2253fa",
+        -- dotdotdot disabled ix board
+        -- board = "d75455",
+        
+        -- dotdotdot bloodlines board
+        board = "c6985a",
+        
+        -- dotdotdot disabled
+        -- negotiationZone = "2253fa",
         techSlots = {
             "7e131d",
             "5a22f7",
@@ -32,7 +39,9 @@ function TechMarket.onLoad(state)
 
     Helper.noPhysicsNorPlay(TechMarket.board)
 
-    if state.settings and state.settings.riseOfIx then
+    -- if state.settings and state.settings.riseOfIx then
+    -- dotdotdot disabled ix
+    if state.settings then
         TechMarket.hagalSoloModeEnabled = state.TechMarket.hagalSoloModeEnabled
         TechMarket._transientSetUp(state.settings)
     end
@@ -47,32 +56,36 @@ end
 
 ---
 function TechMarket.setUp(settings)
-    if settings.riseOfIx then
-        TechMarket.hagalSoloModeEnabled = settings.numberOfPlayers == 1
-        Deck.generateTechDeck(TechMarket.techSlots).doAfter(function (decks)
-            for _, deck in ipairs(decks) do
-                deck.interactable = false
-            end
+    -- dotdotdot disabled
+    -- if settings.riseOfIx then
+    TechMarket.hagalSoloModeEnabled = settings.numberOfPlayers == 1
+    Deck.generateTechDeck(TechMarket.techSlots).doAfter(function (decks)
+        for _, deck in ipairs(decks) do
+            -- dotdotdot kota passive
+            deck.interactable = true
+        end
 
-            if TechMarket.hagalSoloModeEnabled then
-                Helper.onceTimeElapsed(1).doAfter(TechMarket.pruneStacksForSoloMode)
-            end
+        if TechMarket.hagalSoloModeEnabled then
+            Helper.onceTimeElapsed(1).doAfter(TechMarket.pruneStacksForSoloMode)
+        end
 
-            TechMarket._transientSetUp(settings)
-        end)
-    else
-        TechMarket._tearDown()
-    end
+        TechMarket._transientSetUp(settings)
+    end)
+    -- dotdotdot disabled        
+    -- else
+    --     TechMarket._tearDown()
+    -- end
 end
 
 ---
 function TechMarket._transientSetUp(settings)
-    for _, color in ipairs(PlayBoard.getActivePlayBoardColors()) do
-        if not Commander.isCommander(color) then
-            TechMarket.negotiationParks[color] = TechMarket._createNegotiationPark(color)
-        end
-    end
-    TechMarket._createNegotiationButton()
+    -- dotdotdot disabled
+    -- for _, color in ipairs(PlayBoard.getActivePlayBoardColors()) do
+    --     if not Commander.isCommander(color) then
+    --         TechMarket.negotiationParks[color] = TechMarket._createNegotiationPark(color)
+    --     end
+    -- end
+    -- TechMarket._createNegotiationButton()
 
     TechMarket.acquireCards = {}
     for i, zone in ipairs(TechMarket.techSlots) do
@@ -80,7 +93,8 @@ function TechMarket._transientSetUp(settings)
             local leader = PlayBoard.getLeader(color)
             leader.acquireTech(color, i)
         end))
-        acquireCard.groundHeight = acquireCard.groundHeight + 0.2
+        -- dotdotdot 0.2 too low for bloodlines board, changed to 0.22
+        acquireCard.groundHeight = acquireCard.groundHeight + 0.22
         table.insert(TechMarket.acquireCards, acquireCard)
     end
 
@@ -90,14 +104,15 @@ function TechMarket._transientSetUp(settings)
 end
 
 ---
-function TechMarket._tearDown()
-    TechMarket.board.destruct()
-    TechMarket.board = nil
-    TechMarket.negotiationZone.destruct()
-    for _, techSlot in ipairs(TechMarket.techSlots) do
-        techSlot.destruct()
-    end
-end
+-- dotdotdot disabled
+-- function TechMarket._tearDown()
+--     TechMarket.board.destruct()
+--     TechMarket.board = nil
+--     TechMarket.negotiationZone.destruct()
+--     for _, techSlot in ipairs(TechMarket.techSlots) do
+--         techSlot.destruct()
+--     end
+-- end
 
 ---
 function TechMarket.getBoard()
@@ -133,16 +148,17 @@ function TechMarket.pruneStacksForSoloMode()
 end
 
 ---
-function TechMarket._createNegotiationButton()
-    Helper.createAnchoredAreaButton(TechMarket.negotiationZone, 1.6, 0.1, I18N("negotiatorEdit"), PlayBoard.withLeader(function (_, color, altClick)
-        local leader = PlayBoard.getLeader(color)
-        if altClick then
-            leader.troops(color, "negotiation", "supply", 1)
-        else
-            leader.troops(color, "supply", "negotiation", 1)
-        end
-    end))
-end
+-- dotdotdot disabled
+-- function TechMarket._createNegotiationButton()
+--     Helper.createAnchoredAreaButton(TechMarket.negotiationZone, 1.6, 0.1, I18N("negotiatorEdit"), PlayBoard.withLeader(function (_, color, altClick)
+--         local leader = PlayBoard.getLeader(color)
+--         if altClick then
+--             leader.troops(color, "negotiation", "supply", 1)
+--         else
+--             leader.troops(color, "supply", "negotiation", 1)
+--         end
+--     end))
+-- end
 
 ---
 function TechMarket.acquireTech(stackIndex, color)
@@ -247,25 +263,28 @@ function TechMarket._doBuyTech(techTileStack, option, color)
 
     local optionDetails = TechMarket.acquireTechOptions[option]
     local discountAmount = optionDetails.amount
-    local negotiation = TechMarket.getNegotiationPark(color)
-    local recalledNegociatorCount
+    -- dotdotdot disabled
+    -- local negotiation = TechMarket.getNegotiationPark(color)
+    -- local recalledNegociatorCount
     local adjustedTechCost
 
     if optionDetails.resourceType == "spice" then
-        local negotiatorCount = #Park.getObjects(negotiation)
+        -- dotdotdot disabled
+    --     local negotiatorCount = #Park.getObjects(negotiation)
 
-        adjustedTechCost = math.max(0, techCost - discountAmount - negotiatorCount)
-        recalledNegociatorCount = math.max(0, techCost - adjustedTechCost - discountAmount)
-    else
+    --     adjustedTechCost = math.max(0, techCost - discountAmount - negotiatorCount)
+    --     recalledNegociatorCount = math.max(0, techCost - adjustedTechCost - discountAmount)
+    -- else
         adjustedTechCost = math.max(0, techCost - discountAmount)
-        recalledNegociatorCount = 0
+        -- dotdotdot disabled
+        -- recalledNegociatorCount = 0
     end
 
     local leader = PlayBoard.getLeader(color)
     if leader.resources(color, optionDetails.resourceType, -adjustedTechCost) then
-
-        local supply = PlayBoard.getSupplyPark(color)
-        Park.transfert(recalledNegociatorCount, negotiation, supply)
+        -- dotdotdot disabled
+        -- local supply = PlayBoard.getSupplyPark(color)
+        -- Park.transfert(recalledNegociatorCount, negotiation, supply)
 
         TechMarket.acquireTechOptions[option] = nil
 
@@ -333,60 +352,64 @@ function TechMarket.getRivalSpiceDiscount()
 end
 
 ---
-function TechMarket._createNegotiationPark(color)
-    local offsets = {
-        Red = Vector(-0.45, 0, 0.45),
-        Blue = Vector(-0.45, 0, -0.45),
-        Green = Vector(0.45, 0, 0.45),
-        Yellow = Vector(0.45, 0, -0.45)
-    }
+-- dotdotdot disabled
+-- function TechMarket._createNegotiationPark(color)
+--     local offsets = {
+--         Red = Vector(-0.45, 0, 0.45),
+--         Blue = Vector(-0.45, 0, -0.45),
+--         Green = Vector(0.45, 0, 0.45),
+--         Yellow = Vector(0.45, 0, -0.45)
+--     }
 
-    local origin = TechMarket.negotiationZone.getPosition() + offsets[color]
-    origin:setAt('y', 1.86) -- ground level
-    local slots = {}
-    for k = 1, 2 do
-        for j = 1, 2 do
-            for i = 1, 2 do
-                local x = (i - 1.5) * 0.4
-                local y = (k - 1) * 0.4
-                local z = (1.5 - j) * 0.4
-                local slot = Vector(x, y, z) + origin
-                table.insert(slots, slot)
-            end
-        end
-    end
+--     local origin = TechMarket.negotiationZone.getPosition() + offsets[color]
+--     origin:setAt('y', 1.86) -- ground level
+--     local slots = {}
+--     for k = 1, 2 do
+--         for j = 1, 2 do
+--             for i = 1, 2 do
+--                 local x = (i - 1.5) * 0.4
+--                 local y = (k - 1) * 0.4
+--                 local z = (1.5 - j) * 0.4
+--                 local slot = Vector(x, y, z) + origin
+--                 table.insert(slots, slot)
+--             end
+--         end
+--     end
 
-    local zone = Park.createTransientBoundingZone(0, Vector(0.25, 0.25, 0.25), slots)
+--     local zone = Park.createTransientBoundingZone(0, Vector(0.25, 0.25, 0.25), slots)
 
-    return Park.createPark(
-        color .. "Negotiation",
-        slots,
-        Vector(0, 0, 0),
-        { zone },
-        { "Troop", color },
-        nil,
-        false,
-        true)
-end
-
----
-function TechMarket.getNegotiationPark(color)
-    return TechMarket.negotiationParks[color]
-end
+--     return Park.createPark(
+--         color .. "Negotiation",
+--         slots,
+--         Vector(0, 0, 0),
+--         { zone },
+--         { "Troop", color },
+--         nil,
+--         false,
+--         true)
+-- end
 
 ---
-function TechMarket.addNegotiator(color)
-    local supply = PlayBoard.getSupplyPark()
-    local negotiation = TechMarket.negotiationParks[color]
-    return Park.transfert(1, supply, negotiation) > 0
-end
+-- dotdotdot disabled
+-- function TechMarket.getNegotiationPark(color)
+--     return TechMarket.negotiationParks[color]
+-- end
 
 ---
-function TechMarket.removeNegotiator(color)
-    local supply = PlayBoard.getSupplyPark()
-    local negotiation = TechMarket.negotiationParks[color]
-    return Park.transfert(1, negotiation, supply) > 0
-end
+-- dotdotdot disabled
+-- function TechMarket.addNegotiator(color)
+--     local supply = PlayBoard.getSupplyPark()
+--     local negotiation = TechMarket.negotiationParks[color]
+--     return Park.transfert(1, supply, negotiation) > 0
+-- end
+
+---
+-- dotdotdot disabled
+-- function TechMarket.removeNegotiator(color)
+--     local supply = PlayBoard.getSupplyPark()
+--     local negotiation = TechMarket.negotiationParks[color]
+--     return Park.transfert(1, negotiation, supply) > 0
+-- end
 
 --- In TechMarket for convenience, but it could also be in MainBoard.
 function TechMarket.isInside(object)

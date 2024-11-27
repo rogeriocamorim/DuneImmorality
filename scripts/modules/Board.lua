@@ -13,7 +13,8 @@ local Board = {
         emperorBoard = "4cb9ba",
         fremenBoard = "01c575",
         shippingBoard = "0b9dfe",
-        ixBoard = "d75455",
+        -- dotdotdot disable and add bl_TechBoard
+        -- ixBoard = "d75455",
         tleilaxBoard = "d5c2db",
     },
     --[[

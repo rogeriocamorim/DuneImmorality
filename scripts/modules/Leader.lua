@@ -814,4 +814,172 @@ Leader.muadDib = Helper.createClass(Leader, {
     end
 })
 
+-- dotdotdot bloodlines leaders
+Leader.bl_Chani = Helper.createClass(Leader, {
+    positions = {
+        Vector(0.44, 0, 0.63),
+        Vector(0.27, 0, 0.63),
+        Vector(0.10, 0, 0.63),
+        Vector(-0.07, 0, 0.63),
+        Vector(-0.25, 0, 0.63),
+        Vector(-0.43, 0, 0.63),
+        Vector(-0.60, 0, 0.63),
+        Vector(-0.77, 0, 0.63),
+        Vector(-0.94, 0, 0.63),
+    },
+
+    doSetUp = function (color, settings)
+        local snapPoints = {}
+        for _, position in ipairs(Leader.bl_Chani.positions) do
+            table.insert(snapPoints, {
+                position = position,
+                tags = { "ChaniTrainingMarker" },
+            })
+        end
+
+        local leaderCard = PlayBoard.findLeaderCard(color)
+        leaderCard.setSnapPoints(snapPoints)
+    end,
+
+    -- Passive - Tactician - retreat/lose troops in conflict, advance token. reset token after reaching end of the track.
+    prepare = function (color, settings)
+        Action.prepare(color, settings)
+
+        local leaderCard = PlayBoard.findLeaderCard(color)
+        local marker = getObjectFromGUID("759054")
+        marker.setPosition(leaderCard.positionToWorld(Leader.bl_Chani.positions[1]) + Vector(0, 0.5, 0))
+        marker.setInvisibleTo({})
+    end
+    -- Signet - Fedaykin Manuever - retreat any number of troops OR 1 water 2 card draw
+})
+
+Leader.bl_Duncan = Helper.createClass(Leader, {
+    -- Passive - Ginaz Swordmaster - swordmaster costs 2 less
+        -- DONE in function MainBoard._getSwordmasterCost()
+    -- Signet - Into the Fray - send agent into conflict for 2 strength, 3 strength if you have SM
+        -- DONE in function Combat.calculateCombatForce
+})
+
+Leader.bl_Esmar = Helper.createClass(Leader, {
+    -- Passive - tuek's sietch - get 1 solari if you go to tuek's sietch
+        -- DONE in function MainBoard._goTueksSietch
+    -- Passive - tuek's sietch - get 1 intrigue if another player goes to tuek's sietch
+    doSetUp = function (color, settings)
+        Leader.bl_Esmar.transientSetUp(color, settings)
+    end,
+
+    transientSetUp = function (color, settings)
+        Helper.registerEventListener("agentSent", function (otherColor, spaceName)
+            if otherColor ~= color and spaceName == "tueksSietch" then
+                Action.log(I18N("tueksSietchPayment"), color)
+                local leader = PlayBoard.getLeader(color)
+                leader.drawIntrigues(color, 1)
+            end
+        end)
+    end,
+    -- Signet - Smuggle Spice - place 1 bonus spice on Tuek's Sietch OR take 1 bonus spice from Maker spaces
+})
+
+Leader.bl_Hasimir = Helper.createClass(Leader, {
+    -- Passive - Assassin - 1 solari when trashing a card
+        -- MANUAL
+    -- Signet - Corrino Liaison - trash card in play area or deep cover spy on emperor
+        -- MANUAL
+})
+
+Leader.bl_Kota = Helper.createClass(Leader, {
+    doSetUp = function (color, settings)
+        Leader.bl_Kota.transientSetUp(color, settings)
+    end,
+
+    transientSetUp = function (color, settings)
+        Leader._createRightCardButton(nil, color, "ReverseEngineeringAnchor", I18N("reverseEngineeringTooltip"), Leader.bl_Kota.signetRing)
+    end,
+
+    -- Passive - Secret Project - game start - look at bottom tile of each stack, place one tech face down on leader, -1 spice for that tech
+        -- MANUAL
+    -- Signet - Reverse Engineering - 1 spice OR trash tech tile --> 1 intrigue 1 card draw
+    signetRing = function (color)
+        local leader = PlayBoard.getLeader(color)
+        return leader.resources(color, "spice", 1)
+    end
+})
+
+Leader.bl_Liet = Helper.createClass(Leader, {
+    -- Passive - Arrakis Planetologist - sietch access without fremen friendship
+        -- DONE in function MainBoard._goSietchTabr
+    -- Passive - Arrakis Planetologist - no sandworms, get 1 trash 1 spice and 1 intrigue for each worm
+        -- DONE in function MainBoard._goHaggaBasin, function MainBoard._goDeepDesert, function PlayBoard:_createButtons()
+    -- Signet - Judge of the Change - if agent went to green AND two emperor influence get 1 water, if blue get 1 solari, if yellow get 1 spice
+        -- MANUAL
+})
+
+Leader.bl_Mohiam = Helper.createClass(Leader, {
+    -- Passive - Clandestine - played cards have spy access, must recall spy whenever you can
+        -- MANUAL
+    -- Signet - Listeners - spy on green OR 1 spice for spy anywhere
+        -- MANUAL
+})
+
+Leader.bl_Piter = Helper.createClass(Leader, {
+    -- Passive - Twisted Genius - shuffle and place twisted intrigue deck near you
+    prepare = function (color, settings)
+        Action.prepare(color, settings)
+        local leaderCard = PlayBoard.findLeaderCard(color)
+        local twistedIntrigueDeck = getObjectFromGUID("e13c0b")
+        twistedIntrigueDeck.setPosition(leaderCard.positionToWorld(Vector(0, 0.5, -0.7)))
+        Helper.shuffleDeck(twistedIntrigueDeck)
+        twistedIntrigueDeck.setInvisibleTo({})
+    end,
+
+    doSetUp = function (color, settings)
+        Leader.bl_Piter.transientSetUp(color, settings)
+    end,
+
+    -- Passive - Twisted Genius - round start - draw 1 twisted intrigue
+        -- DONE in function PlayBoard._transientSetUp(settings)
+    -- Signet - Harkonnen Advisor - 1 troop, can't deploy this troop into conflict
+    transientSetUp = function (color, settings)
+        Leader._createRightCardButton(nil, color, "HarkonnenAdvisorAnchor", I18N("harkonnenAdvisorTooltip"), Leader.bl_Piter.signetRing)
+    end,
+
+    signetRing = function (color)
+        local leader = PlayBoard.getLeader(color)
+        return leader.troops(color, "supply", "garrison", 1)
+    end
+})
+
+Leader.bl_Yrkoon = Helper.createClass(Leader, {
+    -- Passive - Strange Form - start game with 0 water and without signet
+    -- Passive - Plot Course - start game with navigation cards
+    prepare = function (color, settings)
+        Action.prepare(color, settings)
+        local leaderCard = PlayBoard.findLeaderCard(color)
+        local navigationCards = getObjectFromGUID("7f7845")
+        navigationCards.setPosition(leaderCard.positionToWorld(Vector(0, 0.5, -0.7)))
+        Helper.shuffleDeck(navigationCards)
+        navigationCards.setInvisibleTo({})
+
+        local leader = PlayBoard.getLeader(color)
+        leader.resources(color, "water", -1)
+
+        local drawDeck = PlayBoard.getDrawDeck(color)
+        if drawDeck then
+            for i, card in ipairs(drawDeck.getObjects()) do
+                if Helper.getID(card) == "signetRing" then
+                    drawDeck.takeObject({
+                        index = i - 1,
+                        flip = true,
+                        position = Vector(drawDeck.getPosition() + Vector(0, 1, 0)),
+                        callback_function = function (livingCard)
+                            PlayBoard.getPlayBoard(color):trash(livingCard)
+                        end
+                    })
+                    break
+                end
+            end
+        end
+    end
+})
+
 return Leader

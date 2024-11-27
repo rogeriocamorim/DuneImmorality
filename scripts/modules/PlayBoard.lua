@@ -37,6 +37,7 @@ local PlayBoard = Helper.createClass(nil, {
             water = "692c4d",
             persuasion = "7eb590",
             strength = "3f6645",
+            -- dotdotdot note - use for sardaukar commanders
             dreadnoughts = {"1a3c82", "a8f306"},
             dreadnoughtInitialPositions = {
                 Helper.getHardcodedPositionFromGUID('1a3c82', -23.7000427, 2.199222, 19.3999958),
@@ -101,6 +102,7 @@ local PlayBoard = Helper.createClass(nil, {
             water = "0afaeb",
             persuasion = "d1fed4",
             strength = "aa3bb9",
+            -- dotdotdot note - use for sardaukar commanders
             dreadnoughts = {"82789e", "60f208"},
             dreadnoughtInitialPositions = {
                 Helper.getHardcodedPositionFromGUID('82789e', -23.7000332, 2.199222, -19.0),
@@ -165,6 +167,7 @@ local PlayBoard = Helper.createClass(nil, {
             water = "fa9522",
             persuasion = "aa79bf",
             strength = "d880f7",
+            -- dotdotdot note - use for sardaukar commanders
             dreadnoughts = {"a15087", "734250"},
             dreadnoughtInitialPositions = {
                 Helper.getHardcodedPositionFromGUID('a15087', 23.6931, 2.19653678, 19.3967171),
@@ -229,6 +232,7 @@ local PlayBoard = Helper.createClass(nil, {
             water = "f217d0",
             persuasion = "c04d4e",
             strength = "6f007c",
+            -- dotdotdot note - use for sardaukar commanders
             dreadnoughts = {"5469fb", "71a414"},
             dreadnoughtInitialPositions = {
                 Helper.getHardcodedPositionFromGUID('5469fb', 23.6999512, 2.19653726, -19.0),
@@ -429,6 +433,7 @@ function PlayBoard.rebuild()
             {
                 persuasion = symmetric(c1, 0, 0.2),
                 strength = symmetric(c1, 0, 6),
+                -- dotdotdot note - use for sardaukar commanders
                 dreadnoughts = {
                     origin = symmetric(c1-0.8, 0, 4.2),
                     width = 2,
@@ -602,6 +607,7 @@ function PlayBoard.rebuild()
             })
         end)
 
+        -- dotdotdot note - use for sardaukar commanders
         if content.dreadnoughts then
             layoutGrid(2, 1, function (x, y)
                 table.insert(decals, {
@@ -684,6 +690,7 @@ function PlayBoard:moveAt(position, isRelative, horizontalHandLayout)
         self.revealCardPark,
         self.agentPark,
         self.spyPark,
+        -- dotdotdot note - use for sardaukar commanders
         self.dreadnoughtPark,
         self.supplyPark,
         self.techPark,
@@ -771,6 +778,7 @@ function PlayBoard.onSave(state)
             lastPhase = playBoard.lastPhase,
             revealed = playBoard.revealed,
             initialPositions = {
+                -- dotdotdot note - use for sardaukar commanders
                 dreadnoughtInitialPositions = playBoard.content.dreadnoughtInitialPositions,
                 agentInitialPositions = playBoard.content.agentInitialPositions,
                 spyInitialPositions = playBoard.content.spyInitialPositions,
@@ -861,6 +869,7 @@ function PlayBoard.new(color, unresolvedContent, state, subState)
             end
         end)
 
+        -- dotdotdot note - use for sardaukar commanders
         if not Commander.isCommander(color) then
             playBoard.content.dreadnoughtInitialPositions = Helper.mapValues(subState.initialPositions.dreadnoughtInitialPositions, Helper.toVector)
         end
@@ -919,6 +928,7 @@ function PlayBoard.new(color, unresolvedContent, state, subState)
     playBoard.agentPark = playBoard:_createAgentPark(subState == nil)
     playBoard.spyPark = playBoard:_createSpyPark(subState == nil)
     if not Commander.isCommander(color) then
+        -- dotdotdot note - use for sardaukar commanders
         playBoard.dreadnoughtPark = playBoard:_createDreadnoughtPark(subState == nil)
         playBoard.supplyPark = playBoard:_createSupplyPark(subState == nil)
     end
@@ -1069,6 +1079,13 @@ function PlayBoard._transientSetUp(settings)
 
                 if PlayBoard.hasTech(color, "shuttleFleet") then
                     playBoard.leader.resources(color, "solari", 2)
+                end
+
+                -- dotdotdot piter round start twisted intrigue draw
+                if PlayBoard.getLeader(color).name == "bl_Piter" then
+                    local twistedIntrigueDeck = getObjectFromGUID("e13c0b")
+                    broadcastToAll(I18N("piterTwistedGenius"), color)
+                    twistedIntrigueDeck.deal(1, color)
                 end
             end
         end
@@ -1221,12 +1238,14 @@ end
 ---
 function PlayBoard:_recall()
     local minimicFilm = PlayBoard.hasTech(self.color, "minimicFilm")
+    -- dotdotdot tech self destroying messages
+    local bl_SelfDestroyingMessages = PlayBoard.hasTech(self.color, "bl_SelfDestroyingMessages")
     local restrictedOrdnance = PlayBoard.hasTech(self.color, "restrictedOrdnance")
     local councilSeat = PlayBoard.hasHighCouncilSeat(self.color)
     local swordmasterBonus = TurnControl.getPlayerCount() == 6 and PlayBoard.hasSwordmaster(self.color)
-
+    
     self.revealed = false
-    self.persuasion:set((councilSeat and 2 or 0) + (minimicFilm and 1 or 0))
+    self.persuasion:set((councilSeat and 2 or 0) + (minimicFilm and 1 or 0) + (bl_SelfDestroyingMessages and 1 or 0))
     self.strength:set(((restrictedOrdnance and councilSeat) and 4 or 0) + (swordmasterBonus and 2 or 0))
 
     self:_createButtons()
@@ -1446,7 +1465,11 @@ function PlayBoard.collectReward(color)
             if PlayBoard.hasTech(color, "windtraps") then
                 leader.resources(color, "water", 1)
             end
-
+            -- dotdotdot tech planetary array
+            if PlayBoard.hasTech(color, "bl_PlanetaryArray") then
+                leader.drawImperiumCards(color, 1)
+            end
+            -- dotdotdot note - use for sardaukar commanders
             local dreadnoughts = Combat.getDreadnoughtsInConflict(color)
             if #dreadnoughts > 0 then
                 Dialog.showInfoDialog(color, I18N("dreadnoughtMandatoryOccupation"))
@@ -1568,6 +1591,7 @@ function PlayBoard:_createSpyPark(firstTime)
 end
 
 ---
+-- dotdotdot note - use for sardaukar commanders
 function PlayBoard:_createDreadnoughtPark(firstTime)
     assert(#self.content.dreadnoughtInitialPositions == 2)
     local slots = Helper.mapValues(self.content.dreadnoughtInitialPositions, function (slot)
@@ -1940,11 +1964,18 @@ function PlayBoard:_createButtons()
     local board = self.content.board
 
     if TurnControl.getCurrentRound() > 0 then
-
+        -- dotdotdot note - create button for recruit sardaukar commander from supply, cost 2 solari
         board.createButton({
             click_function = self:_createExclusiveCallback(function (_, _, altClick)
                 if PlayBoard.hasMakerHook(self.color) then
-                    Combat.callSandworm(self.color, altClick and -1 or 1)
+                    -- dotdotdot liet sandworm button
+                    if PlayBoard.getLeader(self.color).name == "bl_Liet" then
+                        broadcastToAll(I18N("lietHatesTheMaker"), self.color)
+                        self.leader.resources(self.color, "spice", 1)
+                        self.leader.drawIntrigues(self.color, 1)
+                    else
+                        Combat.callSandworm(self.color, altClick and -1 or 1)
+                    end
                 else
                     -- TODO Confirmation popup?
                     Combat.callSandworm(self.color, altClick and -1 or 1)
@@ -2333,6 +2364,8 @@ function PlayBoard:_revealHand(brutal)
                 "beneGesseritSister",
                 "undercoverAsset",
                 "desertPower",
+                -- dotdotdot bloodlines choice cards
+                "bl_DeliverLogistics",
             }
             if brutal then
                 choiceOfferingCards = Helper.concatTables(choiceOfferingCards, {
@@ -2358,6 +2391,8 @@ function PlayBoard:_revealHand(brutal)
     local assemblyHall = MainBoard.hasAgentInSpace("assemblyHall", self.color)
 
     local minimicFilm = PlayBoard.hasTech(self.color, "minimicFilm")
+    -- dotdotdot tech self destroying messages
+    local bl_SelfDestroyingMessages = PlayBoard.hasTech(self.color, "bl_SelfDestroyingMessages")
     local restrictedOrdnance = PlayBoard.hasTech(self.color, "restrictedOrdnance")
     local councilSeat = PlayBoard.hasHighCouncilSeat(self.color)
     local artillery = PlayBoard.hasTech(self.color, "artillery")
@@ -2370,7 +2405,9 @@ function PlayBoard:_revealHand(brutal)
         (techNegotiation and 1 or 0) +
         (assemblyHall and 1 or 0) +
         (councilSeat and 2 or 0) +
-        (minimicFilm and 1 or 0))
+        (minimicFilm and 1 or 0) +
+        (bl_SelfDestroyingMessages and 1 or 0))
+        -- dotdotdot tech self destroying messages (previous line)
 
     self.strength:set(
         (imperiumCardContributions.strength or 0) +
@@ -2417,6 +2454,12 @@ function PlayBoard:_revealHand(brutal)
     Helper.emitEvent("reveal", self.color)
 
     self.revealed = true
+
+    -- dotdotdot tech panopticon
+    local bl_Panopticon = PlayBoard.hasTech(self.color, "bl_Panopticon")
+    if bl_Panopticon then
+        self.leader.troops(self.color, "supply", "garrison", 1)
+    end
 end
 
 ---
@@ -2769,6 +2812,7 @@ function PlayBoard.getSpyPark(color)
 end
 
 ---
+-- dotdotdot note - use for sardaukar commanders
 function PlayBoard.getDreadnoughtPark(color)
     return PlayBoard.getPlayBoard(color).dreadnoughtPark
 end
@@ -3173,6 +3217,7 @@ function PlayBoard._getPotentialCombatIntrigues(color)
 end
 
 ---
+-- dotdotdot note - use for sardaukar commanders
 function PlayBoard.getAquiredDreadnoughtCount(color)
     local park = PlayBoard.getPlayBoard(color).dreadnoughtPark
     return #Park.findEmptySlots(park)

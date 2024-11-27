@@ -66,7 +66,8 @@ local MainBoard = {
         haggaBasin = { group = "desert", combat = true, posts = { "haggaBasin" } },
         habbanyaErg = { group = "desert", combat = true, posts = { "habbanyaErg" } },
         imperialBasin = { group = "desert", combat = true, posts = { "imperialBasin" } },
-    }
+        -- dotdotdot tuek's sietch spice bonus token
+        tueksSietch = { group = "desert", combat = true, posts = { "tueksSietch" } },    }
 }
 
 ---
@@ -78,9 +79,19 @@ function MainBoard.onLoad(state)
             haggaBasin = "c24705",
             imperialBasin = "3cdb2d",
             habbanyaErg = "394db2",
+            -- dotdotdot tuek's sietch spice bonus token
+            tueksSietch = "0984aa",
         },
         firstPlayerMarker = "1f5576",
         shieldWallToken = "31d6b0",
+        -- dotdotdot sardaukar commanders
+        sc_GatherSupport = "f951ae",
+        sc_AssemblyHall = "21e46d",
+        sc_HighCouncil = "d226f7",
+        sc_Sardaukar = "f8e9ea",
+        sc_DutifulService = "eb7b9d",
+        sc_DeliverSupplies = "47ef40",
+        sc_Standard = "a0605f",
     }))
     MainBoard.spiceBonuses = {}
 
@@ -312,7 +323,9 @@ function MainBoard._processSnapPoints(settings)
 
         spice = function (name, position)
             local token = MainBoard.spiceBonusTokens[name]
-            token.setPosition(position + Vector(0, -0.05, 0))
+            -- dotdotdot tuek's sietch spice token higher than others
+            -- token.setPosition(position + Vector(0, -0.05, 0))
+            token.setPosition(position + Vector(0, 0, 0))
             Helper.noPhysics(token)
             if not MainBoard.spiceBonuses[name] then
                 MainBoard.spiceBonuses[name] = Resource.new(token, nil, "spice", 0, name)
@@ -872,7 +885,12 @@ function MainBoard._goSecrets(color, leader, continuation)
         leader.drawIntrigues(color, 1)
         for _, otherColor in ipairs(PlayBoard.getActivePlayBoardColors()) do
             if otherColor ~= color then
-                if #PlayBoard.getIntrigues(otherColor) > 3 then
+                -- dotdotdot tech gene-locked vault
+                if PlayBoard.hasTech(otherColor, "bl_GeneLockedVault") then
+                    if #PlayBoard.getIntrigues(otherColor) > 4 then
+                        leader.stealIntrigues(color, otherColor, 1)
+                    end
+                elseif #PlayBoard.getIntrigues(otherColor) > 3 then
                     leader.stealIntrigues(color, otherColor, 1)
                 end
             end
@@ -883,7 +901,16 @@ end
 
 ---
 function MainBoard._goEspionage(color, leader, continuation)
-    if MainBoard._checkGenericAccess(color, leader, { spice = 1 }) then
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if MainBoard._checkGenericAccess(color, leader, { spice = 0 }) then
+            continuation.run(function ()
+                leader.resources(color, "spice", 0)
+                leader.drawImperiumCards(color, 1)
+                leader.influence(color, "beneGesserit", 1)
+            end)
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { spice = 1 }) then
         continuation.run(function ()
             leader.resources(color, "spice", -1)
             leader.drawImperiumCards(color, 1)
@@ -904,7 +931,16 @@ end
 
 ---
 function MainBoard._goHeighliner(color, leader, continuation)
-    if MainBoard._checkGenericAccess(color, leader, { spice = 5 }) then
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if MainBoard._checkGenericAccess(color, leader, { spice = 4 }) then
+            continuation.run(function ()
+                leader.resources(color, "spice", -4)
+                leader.troops(color, "supply", "garrison", 5)
+                leader.influence(color, "spacingGuild", 1)
+            end)
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { spice = 5 }) then
         continuation.run(function ()
             leader.resources(color, "spice", -5)
             leader.troops(color, "supply", "garrison", 5)
@@ -946,7 +982,14 @@ end
 
 ---
 function MainBoard.getSardaukarCost()
-    return TurnControl.getPlayerCount() == 6 and 3 or 4
+    -- dotdotdot tech navigation chamber
+    local color = TurnControl.players[TurnControl.currentPlayerLuaIndex]
+
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        return TurnControl.getPlayerCount() == 6 and 2 or 3
+    else
+        return TurnControl.getPlayerCount() == 6 and 3 or 4
+    end
 end
 
 ---
@@ -1041,9 +1084,27 @@ end
 
 ---
 function MainBoard._goHighCouncil(color, leader, continuation)
-    if MainBoard._checkGenericAccess(color, leader, { solari = 5 }) then
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if MainBoard._checkGenericAccess(color, leader, { solari = 4 }) then
+            continuation.run(function ()
+                leader.resources(color, "solari", -4)
+                -- dotdotdot tech buy space
+                TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 1)
+                if PlayBoard.hasHighCouncilSeat(color) then
+                    leader.resources(color, "spice", 2)
+                    leader.drawIntrigues(color, 1)
+                    leader.troops(color, "supply", "garrison", 3)
+                else
+                    leader.takeHighCouncilSeat(color)
+                end
+            end)
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { solari = 5 }) then
         continuation.run(function ()
             leader.resources(color, "solari", -5)
+            -- dotdotdot tech buy space
+            TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 1)
             if PlayBoard.hasHighCouncilSeat(color) then
                 leader.resources(color, "spice", 2)
                 leader.drawIntrigues(color, 1)
@@ -1059,9 +1120,29 @@ end
 
 ---
 function MainBoard._goImperialPrivilege(color, leader, continuation)
-    if MainBoard._checkGenericAccess(color, leader, { solari = 3, friendship = "emperor" }) then
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if MainBoard._checkGenericAccess(color, leader, { solari = 2, friendship = "emperor" }) then
+            continuation.run(function ()
+                leader.resources(color, "solari", -2)
+                -- dotdotdot tech buy space
+                if PlayBoard.hasHighCouncilSeat(color) then
+                    TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 1)
+                else
+                    TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 0)
+                end
+                leader.drawImperiumCards(color, 1)
+            end)
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { solari = 3, friendship = "emperor" }) then
         continuation.run(function ()
             leader.resources(color, "solari", -3)
+            -- dotdotdot tech buy space
+            if PlayBoard.hasHighCouncilSeat(color) then
+                TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 1)
+            else
+                TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 0)
+            end
             leader.drawImperiumCards(color, 1)
         end)
     else
@@ -1080,6 +1161,12 @@ function MainBoard._goSwordmaster(color, leader, continuation)
     elseif MainBoard._checkGenericAccess(color, leader, { solari = MainBoard._getSwordmasterCost() }) then
         continuation.run(function ()
             leader.resources(color, "solari", -MainBoard._getSwordmasterCost())
+            -- dotdotdot tech buy space
+            if PlayBoard.hasHighCouncilSeat(color) then
+                TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 1)
+            else
+                TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 0)
+            end
             -- Wait for the first agent sent to be marked as moving (not resting),
             -- then move the swordmaster. Otherwise, the target agent park will
             -- grab the first agent back to the park when tidying it up.
@@ -1095,12 +1182,34 @@ end
 ---
 function MainBoard._getSwordmasterCost()
     local firstAccess = #Helper.filter(PlayBoard.getActivePlayBoardColors(), PlayBoard.hasSwordmaster) == 0
-    return firstAccess and 8 or 6
+    -- dotdotdot duncan swordmaster cost
+    local color = TurnControl.players[TurnControl.currentPlayerLuaIndex]
+
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if PlayBoard.getLeader(color).name == "bl_Duncan" then
+            return firstAccess and 5 or 3
+        else
+            return firstAccess and 7 or 5
+        end
+    else
+        if PlayBoard.getLeader(color).name == "bl_Duncan" then
+            return firstAccess and 6 or 4
+        else
+            return firstAccess and 8 or 6
+        end
+    end
 end
 
 ---
 function MainBoard._goAssemblyHall(color, leader, continuation)
     continuation.run(function ()
+        -- dotdotdot tech buy space
+        if PlayBoard.hasHighCouncilSeat(color) then
+            TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 1)
+        else
+            TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 0)
+        end
         leader.drawIntrigues(color, 1)
         leader.resources(color, "persuasion", 1)
     end)
@@ -1108,7 +1217,25 @@ end
 
 ---
 function MainBoard._goGatherSupport(color, leader, continuation)
-    if MainBoard._hasResource(leader, color, "solari", 2) then
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if MainBoard._hasResource(leader, color, "solari", 1) then
+            local options = {
+                I18N("noWaterOption"),
+                I18N("withWaterOption"),
+            }
+            Dialog.showOptionsAndCancelDialog(color, I18N("goGatherSupport"), options, continuation, function (index)
+                if index == 1 then
+                    MainBoard._goGatherSupport_NoWater(color, leader, continuation)
+                elseif index == 2 then
+                    MainBoard._goGatherSupport_WithWater(color, leader, continuation)
+                else
+                    assert(index == 0)
+                    continuation.run()
+                end
+            end)
+        end
+    elseif MainBoard._hasResource(leader, color, "solari", 2) then
         local options = {
             I18N("noWaterOption"),
             I18N("withWaterOption"),
@@ -1130,9 +1257,30 @@ end
 
 ---
 function MainBoard._goGatherSupport_WithWater(color, leader, continuation)
-    if MainBoard._checkGenericAccess(color, leader, { solari = 2 }) then
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if MainBoard._checkGenericAccess(color, leader, { solari = 1 }) then
+            continuation.run(function ()
+                leader.resources(color, "solari", -1)
+                -- dotdotdot tech buy space
+                if PlayBoard.hasHighCouncilSeat(color) then
+                    TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 1)
+                else
+                    TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 0)
+                end
+                leader.troops(color, "supply", "garrison", 2)
+                leader.resources(color, "water", 1)
+            end)
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { solari = 2 }) then
         continuation.run(function ()
             leader.resources(color, "solari", -2)
+            -- dotdotdot tech buy space
+            if PlayBoard.hasHighCouncilSeat(color) then
+                TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 1)
+            else
+                TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 0)
+            end
             leader.troops(color, "supply", "garrison", 2)
             leader.resources(color, "water", 1)
         end)
@@ -1144,13 +1292,27 @@ end
 ---
 function MainBoard._goGatherSupport_NoWater(color, leader, continuation)
     continuation.run(function ()
+        -- dotdotdot tech buy space
+        if PlayBoard.hasHighCouncilSeat(color) then
+            TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 1)
+        else
+            TechMarket.registerAcquireTechOption(color, "TechBuyOption", "spice", 0)
+        end
         leader.troops(color, "supply", "garrison", 2)
     end)
 end
 
 ---
 function MainBoard._goShipping(color, leader, continuation)
-    if MainBoard._checkGenericAccess(color, leader, { spice = 3, friendship = "spacingGuild" }) then
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if MainBoard._checkGenericAccess(color, leader, { spice = 2, friendship = "spacingGuild" }) then
+            continuation.run(function ()
+                leader.resources(color, "spice", -2)
+                leader.resources(color, "solari", 5)
+            end)
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { spice = 3, friendship = "spacingGuild" }) then
         continuation.run(function ()
             leader.resources(color, "spice", -3)
             leader.resources(color, "solari", 5)
@@ -1178,7 +1340,27 @@ end
 
 ---
 function MainBoard._goSietchTabr(color, leader, continuation)
-    if MainBoard._checkGenericAccess(color, leader, { friendship = "fremen" }) then
+    -- dotdotdot liet sietch access
+    if PlayBoard.getLeader(color).name == "bl_Liet" then
+        if MainBoard._checkGenericAccess(color, leader, continuation) then
+            local options = {
+                PlayBoard.canTakeMakerHook(color) and I18N("hookTroopWaterOption") or I18N("troopWaterOption"),
+                I18N("waterShieldWallOption"),
+            }
+            Dialog.showOptionsAndCancelDialog(color, I18N("goSietchTabr"), options, continuation, function (index)
+                if index == 1 then
+                    MainBoard._goSietchTabr_HookTroopWater(color, leader, continuation)
+                elseif index == 2 then
+                    MainBoard._goSietchTabr_WaterShieldWall(color, leader, continuation)
+                else
+                    assert(index == 0)
+                    continuation.run()
+                end
+            end)
+        else
+            continuation.run()
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { friendship = "fremen" }) then
         local options = {
             PlayBoard.canTakeMakerHook(color) and I18N("hookTroopWaterOption") or I18N("troopWaterOption"),
             I18N("waterShieldWallOption"),
@@ -1196,11 +1378,41 @@ function MainBoard._goSietchTabr(color, leader, continuation)
     else
         continuation.run()
     end
+    -- original
+    -- if MainBoard._checkGenericAccess(color, leader, { friendship = "fremen" }) then
+    --     local options = {
+    --         PlayBoard.canTakeMakerHook(color) and I18N("hookTroopWaterOption") or I18N("troopWaterOption"),
+    --         I18N("waterShieldWallOption"),
+    --     }
+    --     Dialog.showOptionsAndCancelDialog(color, I18N("goSietchTabr"), options, continuation, function (index)
+    --         if index == 1 then
+    --             MainBoard._goSietchTabr_HookTroopWater(color, leader, continuation)
+    --         elseif index == 2 then
+    --             MainBoard._goSietchTabr_WaterShieldWall(color, leader, continuation)
+    --         else
+    --             assert(index == 0)
+    --             continuation.run()
+    --         end
+    --     end)
+    -- else
+    --     continuation.run()
+    -- end
 end
 
 ---
 function MainBoard._goSietchTabr_HookTroopWater(color, leader, continuation)
-    if MainBoard._checkGenericAccess(color, leader, { friendship = "fremen" }) then
+    -- dotdotdot liet sietch access
+    if PlayBoard.getLeader(color).name == "bl_Liet" then
+        if MainBoard._checkGenericAccess(color, leader, continuation) then
+            continuation.run(function ()
+                leader.takeMakerHook(color)
+                leader.troops(color, "supply", "garrison", 1)
+                leader.resources(color, "water", 1)
+            end)
+        else
+            continuation.run()
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { friendship = "fremen" }) then
         continuation.run(function ()
             leader.takeMakerHook(color)
             leader.troops(color, "supply", "garrison", 1)
@@ -1209,11 +1421,31 @@ function MainBoard._goSietchTabr_HookTroopWater(color, leader, continuation)
     else
         continuation.run()
     end
+    -- original
+    -- if MainBoard._checkGenericAccess(color, leader, { friendship = "fremen" }) then
+    --     continuation.run(function ()
+    --         leader.takeMakerHook(color)
+    --         leader.troops(color, "supply", "garrison", 1)
+    --         leader.resources(color, "water", 1)
+    --     end)
+    -- else
+    --     continuation.run()
+    -- end
 end
 
 ---
 function MainBoard._goSietchTabr_WaterShieldWall(color, leader, continuation)
-    if MainBoard._checkGenericAccess(color, leader, { friendship = "fremen" }) then
+    -- dotdotdot liet sietch access
+    if PlayBoard.getLeader(color).name == "bl_Liet" then
+        if MainBoard._checkGenericAccess(color, leader, continuation) then
+            continuation.run(function ()
+                leader.resources(color, "water", 1)
+                MainBoard.blowUpShieldWall(color, true)
+            end)
+        else
+            continuation.run()
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { friendship = "fremen" }) then
         continuation.run(function ()
             leader.resources(color, "water", 1)
             MainBoard.blowUpShieldWall(color, true)
@@ -1221,6 +1453,15 @@ function MainBoard._goSietchTabr_WaterShieldWall(color, leader, continuation)
     else
         continuation.run()
     end
+    -- original
+    -- if MainBoard._checkGenericAccess(color, leader, { friendship = "fremen" }) then
+    --     continuation.run(function ()
+    --         leader.resources(color, "water", 1)
+    --         MainBoard.blowUpShieldWall(color, true)
+    --     end)
+    -- else
+    --     continuation.run()
+    -- end
 end
 
 ---
@@ -1234,6 +1475,68 @@ function MainBoard._goResearchStation(color, leader, continuation)
             else
                 leader.troops(color, "supply", "garrison", 2)
             end
+        end)
+    else
+        continuation.run()
+    end
+end
+
+---
+function MainBoard._goSpiceRefinery(color, leader, continuation)
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if MainBoard._hasResource(leader, color, "spice", 0) then
+            local options = {
+                I18N("noSpiceOption"),
+                I18N("withSpiceOption"),
+            }
+            Dialog.showOptionsAndCancelDialog(color, I18N("goSpiceRefinery"), options, continuation, function (index)
+                if index == 1 then
+                    MainBoard._goSpiceRefinery_NoSpice(color, leader, continuation)
+                elseif index == 2 then
+                    MainBoard._goSpiceRefinery_WithSpice(color, leader, continuation)
+                else
+                    assert(index == 0)
+                    continuation.run()
+                end
+            end)
+        end
+    elseif MainBoard._hasResource(leader, color, "spice", 1) then
+        local options = {
+            I18N("noSpiceOption"),
+            I18N("withSpiceOption"),
+        }
+        Dialog.showOptionsAndCancelDialog(color, I18N("goSpiceRefinery"), options, continuation, function (index)
+            if index == 1 then
+                MainBoard._goSpiceRefinery_NoSpice(color, leader, continuation)
+            elseif index == 2 then
+                MainBoard._goSpiceRefinery_WithSpice(color, leader, continuation)
+            else
+                assert(index == 0)
+                continuation.run()
+            end
+        end)
+    else
+        MainBoard._goSpiceRefinery_NoSpice(color, leader, continuation)
+    end
+end
+
+---
+function MainBoard._goSpiceRefinery_WithSpice(color, leader, continuation)
+    -- dotdotdot tech navigation chamber
+    if PlayBoard.hasTech(color, "bl_NavigationChamber") then
+        if MainBoard._checkGenericAccess(color, leader, { spice = 0 }) then
+            continuation.run(function ()
+                leader.resources(color, "spice", 0)
+                leader.resources(color, "solari", 4)
+                MainBoard._applyControlOfAnySpace(MainBoard.banners.spiceRefineryBannerZone, "solari")
+            end)
+        end
+    elseif MainBoard._checkGenericAccess(color, leader, { spice = 1 }) then
+        continuation.run(function ()
+            leader.resources(color, "spice", -1)
+            leader.resources(color, "solari", 4)
+            MainBoard._applyControlOfAnySpace(MainBoard.banners.spiceRefineryBannerZone, "solari")
         end)
     else
         continuation.run()
@@ -1294,7 +1597,27 @@ end
 
 ---
 function MainBoard._goDeepDesert(color, leader, continuation)
-    if PlayBoard.hasMakerHook(color) and (not MainBoard.shieldWallIsStanding() or not Combat.isCurrentConflictBehindTheWall()) then
+    -- dotdotdot liet deep desert
+    if PlayBoard.getLeader(color).name == "bl_Liet" then
+        if PlayBoard.hasMakerHook(color) then
+            local options = {
+                I18N("fourSpicesOption"),
+                I18N("twoWormsOption"),
+            }
+            Dialog.showOptionsAndCancelDialog(color, I18N("goDeepDesert"), options, continuation, function (index)
+                if index == 1 then
+                    MainBoard._goDeepDesert_Spice(color, leader, continuation)
+                elseif index == 2 then
+                    MainBoard._goDeepDesert_WormsIfHook(color, leader, continuation)
+                else
+                    assert(index == 0)
+                    continuation.run()
+                end
+            end)
+        else
+            MainBoard._goDeepDesert_Spice(color, leader, continuation)
+        end
+    elseif PlayBoard.hasMakerHook(color) and (not MainBoard.shieldWallIsStanding() or not Combat.isCurrentConflictBehindTheWall()) then
         local options = {
             I18N("fourSpicesOption"),
             I18N("twoWormsOption"),
@@ -1312,6 +1635,25 @@ function MainBoard._goDeepDesert(color, leader, continuation)
     else
         MainBoard._goDeepDesert_Spice(color, leader, continuation)
     end
+    -- original
+    -- if PlayBoard.hasMakerHook(color) and (not MainBoard.shieldWallIsStanding() or not Combat.isCurrentConflictBehindTheWall()) then
+    --     local options = {
+    --         I18N("fourSpicesOption"),
+    --         I18N("twoWormsOption"),
+    --     }
+    --     Dialog.showOptionsAndCancelDialog(color, I18N("goDeepDesert"), options, continuation, function (index)
+    --         if index == 1 then
+    --             MainBoard._goDeepDesert_Spice(color, leader, continuation)
+    --         elseif index == 2 then
+    --             MainBoard._goDeepDesert_WormsIfHook(color, leader, continuation)
+    --         else
+    --             assert(index == 0)
+    --             continuation.run()
+    --         end
+    --     end)
+    -- else
+    --     MainBoard._goDeepDesert_Spice(color, leader, continuation)
+    -- end
 end
 
 ---
@@ -1321,7 +1663,19 @@ end
 
 ---
 function MainBoard._goDeepDesert_WormsIfHook(color, leader, continuation)
-    if not PlayBoard.hasMakerHook(color) then
+    -- dotdotdot liet deep desert
+    if PlayBoard.getLeader(color).name == "bl_Liet" then
+        if not PlayBoard.hasMakerHook(color) then
+            Dialog.broadcastToColor(I18N("noMakerHook"), color, "Purple")
+            continuation.run()
+        else
+            MainBoard._anySpiceSpace(color, leader, 3, 0, MainBoard.spiceBonuses.deepDesert, continuation, function ()
+                broadcastToAll(I18N("lietHatesTheMakerDeepDesert"), color)
+                leader.resources(color, "spice", 2)
+                leader.drawIntrigues(color, 2)
+            end)
+        end
+    elseif not PlayBoard.hasMakerHook(color) then
         Dialog.broadcastToColor(I18N("noMakerHook"), color, "Purple")
         continuation.run()
     elseif MainBoard.shieldWallIsStanding() and Combat.isCurrentConflictBehindTheWall() then
@@ -1332,6 +1686,18 @@ function MainBoard._goDeepDesert_WormsIfHook(color, leader, continuation)
             leader.callSandworm(color, 2)
         end)
     end
+    -- original
+    -- if not PlayBoard.hasMakerHook(color) then
+    --     Dialog.broadcastToColor(I18N("noMakerHook"), color, "Purple")
+    --     continuation.run()
+    -- elseif MainBoard.shieldWallIsStanding() and Combat.isCurrentConflictBehindTheWall() then
+    --     Dialog.broadcastToColor(I18N("shieldWallIsStanding"), color, "Purple")
+    --     continuation.run()
+    -- else
+    --     MainBoard._anySpiceSpace(color, leader, 3, 0, MainBoard.spiceBonuses.deepDesert, continuation, function ()
+    --         leader.callSandworm(color, 2)
+    --     end)
+    -- end
 end
 
 ---
@@ -1344,7 +1710,27 @@ end
 
 ---
 function MainBoard._goHaggaBasin(color, leader, continuation)
-    if PlayBoard.hasMakerHook(color) and (not MainBoard.shieldWallIsStanding() or not Combat.isCurrentConflictBehindTheWall()) then
+    -- dotdotdot liet hagga
+    if PlayBoard.getLeader(color).name == "bl_Liet" then
+        if PlayBoard.hasMakerHook(color) then
+            local options = {
+                I18N("twoSpicesOption"),
+                I18N("oneWormOption"),
+            }
+            Dialog.showOptionsAndCancelDialog(color, I18N("goHaggaBasin"), options, continuation, function (index)
+                if index == 1 then
+                    MainBoard._goHaggaBasin_Spice(color, leader, continuation)
+                elseif index == 2 then
+                    MainBoard._goHaggaBasin_WormIfHook(color, leader, continuation)
+                else
+                    assert(index == 0)
+                    continuation.run()
+                end
+            end)
+        else
+            MainBoard._goHaggaBasin_Spice(color, leader, continuation)
+        end
+    elseif PlayBoard.hasMakerHook(color) and (not MainBoard.shieldWallIsStanding() or not Combat.isCurrentConflictBehindTheWall()) then
         local options = {
             I18N("twoSpicesOption"),
             I18N("oneWormOption"),
@@ -1362,6 +1748,25 @@ function MainBoard._goHaggaBasin(color, leader, continuation)
     else
         MainBoard._goHaggaBasin_Spice(color, leader, continuation)
     end
+    -- original
+    -- if PlayBoard.hasMakerHook(color) and (not MainBoard.shieldWallIsStanding() or not Combat.isCurrentConflictBehindTheWall()) then
+    --     local options = {
+    --         I18N("twoSpicesOption"),
+    --         I18N("oneWormOption"),
+    --     }
+    --     Dialog.showOptionsAndCancelDialog(color, I18N("goHaggaBasin"), options, continuation, function (index)
+    --         if index == 1 then
+    --             MainBoard._goHaggaBasin_Spice(color, leader, continuation)
+    --         elseif index == 2 then
+    --             MainBoard._goHaggaBasin_WormIfHook(color, leader, continuation)
+    --         else
+    --             assert(index == 0)
+    --             continuation.run()
+    --         end
+    --     end)
+    -- else
+    --     MainBoard._goHaggaBasin_Spice(color, leader, continuation)
+    -- end
 end
 
 ---
@@ -1371,7 +1776,107 @@ end
 
 ---
 function MainBoard._goHaggaBasin_WormIfHook(color, leader, continuation)
-    if not PlayBoard.hasMakerHook(color) then
+    -- dotdotdot liet hagga
+    if PlayBoard.getLeader(color).name == "bl_Liet" then
+        if not PlayBoard.hasMakerHook(color) then
+            Dialog.broadcastToColor(I18N("noMakerHook"), color, "Purple")
+            continuation.run()
+        else
+            MainBoard._anySpiceSpace(color, leader, 1, 0, MainBoard.spiceBonuses.haggaBasin, continuation, function ()
+                broadcastToAll(I18N("lietHatesTheMaker"), color)
+                leader.resources(color, "spice", 1)
+                leader.drawIntrigues(color, 1)
+            end)
+        end
+    elseif not PlayBoard.hasMakerHook(color) then
+        Dialog.broadcastToColor(I18N("noMakerHook"), color, "Purple")
+        continuation.run()
+    elseif MainBoard.shieldWallIsStanding() and Combat.isCurrentConflictBehindTheWall() then
+        Dialog.broadcastToColor(I18N("shieldWallIsStanding"), color, "Purple")
+        continuation.run()
+    else
+        MainBoard._anySpiceSpace(color, leader, 1, 0, MainBoard.spiceBonuses.haggaBasin, continuation, function ()
+            leader.callSandworm(color, 1)
+        end)
+    end
+    -- original
+    -- if not PlayBoard.hasMakerHook(color) then
+    --     Dialog.broadcastToColor(I18N("noMakerHook"), color, "Purple")
+    --     continuation.run()
+    -- elseif MainBoard.shieldWallIsStanding() and Combat.isCurrentConflictBehindTheWall() then
+    --     Dialog.broadcastToColor(I18N("shieldWallIsStanding"), color, "Purple")
+    --     continuation.run()
+    -- else
+    --     MainBoard._anySpiceSpace(color, leader, 1, 0, MainBoard.spiceBonuses.haggaBasin, continuation, function ()
+    --         leader.callSandworm(color, 1)
+    --     end)
+    -- end
+end
+
+---
+-- dotdotdot tuek's sietch
+function MainBoard._goTueksSietch(color, leader, continuation)
+    local options = {
+        I18N("tueksSpiceOption"),
+        I18N("tueksDrawOption"),
+    }
+    Dialog.showOptionsAndCancelDialog(color, I18N("goTueksSietch"), options, continuation, function (index)
+        if index == 1 then
+            MainBoard._goTueksSietch_Spice(color, leader, continuation)
+        elseif index == 2 then
+            MainBoard._goTueksSietch_Draw(color, leader, continuation)
+        else
+            assert(index == 0)
+            continuation.run()
+        end
+    end)
+end
+
+---
+-- dotdotdot tuek's sietch spice
+function MainBoard._goTueksSietch_Spice(color, leader, continuation)
+    MainBoard._anySpiceSpace(color, leader, 0, 1, MainBoard.spiceBonuses.tueksSietch, continuation, function ()
+        -- dotdotdot esmar passive - 1 solari
+        if PlayBoard.getLeader(color).name == "bl_Esmar" then
+            leader.resources(color, "solari", 1)
+        end
+    end)
+end
+
+---
+-- dotdotdot tuek's sietch draw
+function MainBoard._goTueksSietch_Draw(color, leader, continuation)
+    MainBoard._anySpiceSpace(color, leader, 0, 0, MainBoard.spiceBonuses.tueksSietch, continuation, function ()
+        -- dotdotdot esmar passive - 1 solari
+        if PlayBoard.getLeader(color).name == "bl_Esmar" then
+            leader.resources(color, "solari", 1)
+        end
+        leader.drawImperiumCards(color, 1)
+    end)
+end
+
+---
+function MainBoard._goHaggaBasin_Spice(color, leader, continuation)
+    return MainBoard._anySpiceSpace(color, leader, 1, 2, MainBoard.spiceBonuses.haggaBasin, continuation)
+end
+
+---
+function MainBoard._goHaggaBasin_WormIfHook(color, leader, continuation)
+    -- dotdotdot liet hagga
+    local leaderName = PlayBoard.getLeaderName(color)
+
+    if leaderName == "Liet Kynes" then
+        if not PlayBoard.hasMakerHook(color) then
+            Dialog.broadcastToColor(I18N("noMakerHook"), color, "Purple")
+            continuation.run()
+        else
+            MainBoard._anySpiceSpace(color, leader, 1, 0, MainBoard.spiceBonuses.haggaBasin, continuation, function ()
+                broadcastToAll(I18N("lietHatesTheMaker"), color)
+                leader.resources(color, "spice", 1)
+                leader.drawIntrigues(color, 1)
+            end)
+        end
+    elseif not PlayBoard.hasMakerHook(color) then
         Dialog.broadcastToColor(I18N("noMakerHook"), color, "Purple")
         continuation.run()
     elseif MainBoard.shieldWallIsStanding() and Combat.isCurrentConflictBehindTheWall() then
@@ -1384,12 +1889,6 @@ function MainBoard._goHaggaBasin_WormIfHook(color, leader, continuation)
     end
 end
 
----
-function MainBoard._goImperialBasin(color, leader, continuation)
-    MainBoard._anySpiceSpace(color, leader, 0, 1, MainBoard.spiceBonuses.imperialBasin, continuation, function ()
-        MainBoard._applyControlOfAnySpace(MainBoard.banners.imperialBasinBannerZone, "spice")
-    end)
-end
 
 ---
 function MainBoard._anySpiceSpace(color, leader, waterCost, spiceBaseAmount, spiceBonus, continuation, additionalAction)
