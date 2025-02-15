@@ -641,7 +641,7 @@ function setUpFromUI()
         leaderSelection = Controller.fields.leaderSelection,
         defaultLeaderPoolSize = tonumber(Controller.fields.defaultLeaderPoolSize),
         tweakLeaderSelection = Controller.fields.tweakLeaderSelection,
-        fanmadeLeaders = Controller.fields.fanmadeLeaders,
+        fanmadeLeaders = Controller.fields.fanmadeLeaders == true,
         horizontalHandLayout = Controller.fields.horizontalHandLayout,
         variant = Controller.fields.variant,
         formalCombatPhase = Controller.fields.formalCombatPhase,
@@ -741,11 +741,15 @@ function Controller.applyVirtualHotSeatMode()
             none = "none",
             arrakeenScouts = "arrakeenScouts"
         }
+        Controller.fields.fanmadeLeaders = false
     else
         Controller.fields.variant_all = {
             none = "none",
         }
         Controller.fields.variant = "none"
+        Controller.fields.fanmadeLeaders = false
+        Controller.ui:toUI()
+        Controller.fields.fanmadeLeaders = {}
     end
 
     Controller.updateSetupButton()
